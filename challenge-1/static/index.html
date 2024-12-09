@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Santa's Wishlist Manager 🎅🎄</title>
+        <style>
+            body {
+                font-family: "Arial", sans-serif;
+                background: url("background.png") no-repeat center center fixed;
+                background-size: cover;
+                color: #000;
+                margin: 0;
+                padding: 0;
+                text-align: center;
+            }
+            header {
+                background-color: rgba(
+                    139,
+                    0,
+                    0,
+                    0.8
+                ); /* Semi-transparent red */
+                padding: 20px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            }
+            header h1 {
+                font-size: 2.5rem;
+                margin: 0;
+                color: #fff;
+            }
+            header p {
+                font-size: 1.2rem;
+                margin: 5px 0 0;
+                color: #ffd700;
+            }
+            .container {
+                margin: 20px auto;
+                max-width: 800px;
+                text-align: left;
+                background: rgba(
+                    255,
+                    255,
+                    255,
+                    0.9
+                ); /* White with slight transparency */
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            form,
+            .actions {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            input,
+            button {
+                font-size: 1rem;
+                padding: 10px;
+                border-radius: 4px;
+                border: 2px solid #8b0000;
+            }
+            button {
+                background-color: #8b0000;
+                color: #fff;
+                cursor: pointer;
+                font-weight: bold;
+                border: none;
+            }
+            button:hover {
+                background-color: #ff4500;
+            }
+            .wishlist {
+                margin: 10px 0;
+                padding: 15px;
+                background: #f0f0f0;
+                border: 2px solid #8b0000;
+                border-radius: 6px;
+            }
+            .wishlist h3 {
+                margin: 0 0 10px;
+                color: #8b0000;
+            }
+            .wishlist ul {
+                padding-left: 20px;
+                margin: 0;
+            }
+            .wishlist ul li {
+                margin: 5px 0;
+                color: #000;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>🎅 Santa's Wishlist Manager 🎄</h1>
+            <p>Helping Santa and his elves stay organized this Christmas!</p>
+        </header>
+        <div class="container">
+            <form id="wishlist-form">
+                <input
+                    type="text"
+                    id="wishlist-name"
+                    placeholder="Wishlist Name (e.g., John's Wishlist)"
+                    required
+                />
+                <input
+                    type="text"
+                    id="wishlist-items"
+                    placeholder="Items (comma-separated, e.g., toy car, book, doll)"
+                    required
+                />
+                <button type="submit">Add Wishlist</button>
+            </form>
+            <div class="actions">
+                <button id="delete-all" style="background-color: #ff4500">
+                    Delete All Wishlists
+                </button>
+            </div>
+            <h2>All Wishlists</h2>
+            <div id="wishlist-list">
+                <!-- Wishlists will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <script>
+            const API_URL = "/api";
+
+            async function fetchWishlists() {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                const wishlistList = document.getElementById("wishlist-list");
+                wishlistList.innerHTML = "";
+                data.forEach((wishlist) => {
+                    const div = document.createElement("div");
+                    div.classList.add("wishlist");
+                    div.innerHTML = `<h3>${wishlist.name}</h3>`;
+                    const ul = document.createElement("ul");
+                    wishlist.items.forEach((item) => {
+                        const li = document.createElement("li");
+                        li.textContent = item;
+                        ul.appendChild(li);
+                    });
+                    div.appendChild(ul);
+                    wishlistList.appendChild(div);
+                });
+            }
+
+            async function addWishlist(event) {
+                event.preventDefault();
+                const nameInput = document.getElementById("wishlist-name");
+                const itemsInput = document.getElementById("wishlist-items");
+
+                const name = nameInput.value.trim();
+                const items = itemsInput.value
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter((item) => item);
+
+                if (name && items.length) {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ name, items }),
+                    });
+                    nameInput.value = "";
+                    itemsInput.value = "";
+                    fetchWishlists();
+                }
+            }
+
+            async function deleteAllWishlists() {
+                if (confirm("Are you sure you want to delete all wishlists?")) {
+                    await fetch(API_URL, {
+                        method: "DELETE",
+                    });
+                    fetchWishlists();
+                }
+            }
+
+            document
+                .getElementById("wishlist-form")
+                .addEventListener("submit", addWishlist);
+            document
+                .getElementById("delete-all")
+                .addEventListener("click", deleteAllWishlists);
+            fetchWishlists();
+        </script>
+    </body>
+</html>
