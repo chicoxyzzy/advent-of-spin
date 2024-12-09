@@ -11,11 +11,11 @@ route = "/api/..."
 component = "api"
 
 [component.api]
-source = "build/main.wasm"
+source = "api/main.wasm"
 allowed_outbound_hosts = []
 key_value_stores = ["default"]
 [component.api.build]
-command = "tinygo build -target=wasi -gc=leaking -no-debug -o build/main.wasm main.go"
+command = "tinygo build -target=wasi -gc=leaking -no-debug -o main.wasm main.go"
 workdir = "api"
 watch = ["**/*.go", "go.mod"]
 
